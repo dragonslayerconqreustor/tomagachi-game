@@ -1,29 +1,20 @@
 let buttons = [];
-let barHeights = [120, 120, 120, 120]; // [Food, Energy, Happiness, Health]
-let petX = 400;
+let barHeights = [120, 120, 120, 120]; 
 let petY = 400;
 let time = 0;
 let lastHealthDecrease = 0;
-let healthDecreaseInterval = 5; // Decrease health every 5 seconds
+let healthDecreaseInterval = 5; 
 let eatSound, sleepSound, playSound, cleanSound;
+let vineSound;   
 
 
-
-// Declare all sounds and other resources globally
-
-
-
-let vineSound;   // Ensure vineSound is correctly declared here
-
-
-
-// Add control display state variables
 let showControls = false;
 let showKeyboardControls = false; 
 // Add controller variables
 let gamepad = null;
 let lastButtonState = {};
 
+//pet variables
 let pet = {
   hunger: 100,
   energy: 100,
@@ -38,7 +29,9 @@ let keyboard = {
 };
 
 let backgroundImg;
+
 let isSleeping = false;
+
 let lastUpdate = 0;
 const updateInterval = 1000;
 const MAX_BAR_HEIGHT = 120;
@@ -54,7 +47,7 @@ const energyIncreaseInterval = 2; // Increase energy every 2 seconds while sleep
 
 const HAPPINESS_THRESHOLD = 30;
 const SLEEPNESS_THRESHOLD = 20;
-
+//ps5 cotnroler button variables
 const PS5_BUTTONS = {
   CROSS: 0,
   CIRCLE: 1,
@@ -71,7 +64,7 @@ const PS5_BUTTONS = {
 
   let lastActionTime = { eat: 0, sleep: 0, play: 0, clean: 0 };
   const actionCooldown = 2000; // 2 seconds in milliseconds
-  
+  //preloads the background img and sounds
   function preload() {
     backgroundImg = loadImage('swamp.jpg');
     eatSound = loadSound('eating-crunchy-food-asmr.mp3');
@@ -83,7 +76,7 @@ const PS5_BUTTONS = {
 
 
 
-
+//setups everything that needs to be setup
 function setup() {
   createCanvas(800, 800);
   userStartAudio();
@@ -94,13 +87,13 @@ function setup() {
   for (let key in PS5_BUTTONS) {
     lastButtonState[PS5_BUTTONS[key]] = false;
   }
-  // Add the event listener for key presses
+
   window.addEventListener("keydown", handleKeyDown);
 
-  // Initialize sounds with empty objects to prevent errors if sound files are missing
+
 
 }
-
+//function that setups the controler and detects if a cotnroler is connected
 function setupController() {
   window.addEventListener("gamepadconnected", (event) => {
     console.log("Controller connected:", event.gamepad);
@@ -112,21 +105,21 @@ function setupController() {
     gamepad = null;
   });
 }
-
+//the functiont hat handels the keyboard controles
 function handleKeyDown(event) {
-  // Always allow pause toggle regardless of pause state
+
   if (event.key === 'Escape') {
     togglePause();
     return;
   }
 
-  // Always allow controls toggle
+
   if (event.key === 'k' || event.key === 'K') {
     toggleControls();
     return;
   }
 
-  // Only process other keyboard inputs if game is not paused
+  
   if (!isPaused) {
     switch (event.key) {
       case 'e':
@@ -150,32 +143,34 @@ function handleKeyDown(event) {
     }
   }
 }
+
+//draw function draws everything
 function draw() {
   background(backgroundImg);
   
 
   
-  // Check for controller input
+
   checkControllerInput();
   
   updateBars();
   drawBars();
   drawPet();
   
-  // Only draw instructions if showControls is true
+ 
   if (showControls) {
     drawInstructions();
   }
 
-  // Always show status indicators
+
   drawStatusIndicators();
   
   saveGame();
 }
-
+//hides and shows cotnrolers whent he corisponded button is clicked
 function toggleControls() {
   showControls = !showControls;
-  // Reset to default view when hiding controls
+
   if (!showControls) {
     showKeyboardControls = false;
   }
@@ -183,9 +178,9 @@ function toggleControls() {
 
 
 
-// Modified instruction display function
+//creats a semi transparent cotnrole list based on the used device wil change to cotnroelr when a controler inpute is detected
 function drawInstructions() {
-  // Create semi-transparent background for better readability
+  
   fill(0, 0, 0, 180);
   rect(10, height - 280, width - 20, 260, 10);
   
@@ -193,8 +188,7 @@ function drawInstructions() {
   textSize(16);
   textAlign(LEFT);
   let startY = height - 260;
-  let centerX = width / 2 - 150;  // Centered position
-  
+  let centerX = width / 2 - 150;  
   if (gamepad && !showKeyboardControls) {
     // Controller controls
     text("Controller Controls:", centerX, startY);
@@ -216,14 +210,14 @@ function drawInstructions() {
   }
 }
 
-
+//checks the buttons that have been pressed on ps5 controler
 function checkButton(buttonIndex, action, buttonName) {
   if (!gamepad || !gamepad.buttons || !gamepad.buttons[buttonIndex]) return;
   
   const button = gamepad.buttons[buttonIndex];
   const isPressed = button.pressed;
   
-  // If button was just pressed (wasn't pressed last frame but is now)
+ 
   if (isPressed && !lastButtonState[buttonIndex]) {
     console.log(`${buttonName} button pressed!`);
     action();
@@ -232,18 +226,18 @@ function checkButton(buttonIndex, action, buttonName) {
   // Update last button state
   lastButtonState[buttonIndex] = isPressed;
 }
-
+//checks the controler inputed of ps5 controler
 function checkControllerInput() {
   const gamepads = navigator.getGamepads();
   if (!gamepads[0]) return;
   
   gamepad = gamepads[0];
   
-  // Check for pause and controls toggle regardless of pause state
+  
   checkButton(PS5_BUTTONS.OPTIONS, togglePause, "Options");
   checkButton(PS5_BUTTONS.SHARE, toggleControls, "Share");
   
-  // Only check other buttons if the game is not paused
+  
   if (!isPaused) {
     checkButton(PS5_BUTTONS.CROSS, eatAction, "Cross/X");
     checkButton(PS5_BUTTONS.CIRCLE, sleepAction, "Circle");
@@ -251,7 +245,7 @@ function checkControllerInput() {
     checkButton(PS5_BUTTONS.TRIANGLE, cleanAction, "Triangle");
   }
 }
-
+//when pause is pressed this pauses the game
 let isPaused = false;
 
 function togglePause() {
@@ -264,17 +258,17 @@ function togglePause() {
     energyDecreaseInterval = Infinity;
     happinessDecreaseInterval = Infinity;
   } else {
-    // Restore normal decrease intervals when unpaused
+    // Restores normal decrease intervals when unpaused
     healthDecreaseInterval = 5;
     foodDecreaseInterval = 5;
     energyDecreaseInterval = 10;
     happinessDecreaseInterval = 10;
   }
   
-  // Optionally, add visual feedback (e.g., display "PAUSED" on screen)
+ 
   console.log("Game is now " + (isPaused ? "paused" : "running"));
 }
-
+//updates the bars with the stats the actions do
 function updateBars() {
   let currentTime = millis();
 
@@ -318,7 +312,7 @@ function updateBars() {
   }
 }
 
-
+//creats the buttons
   function createCustomButtons() {
     let buttonNames = ['Eat', 'Sleep', 'Play', 'Clean', 'Controls', 'Pause'];  // Added 'Pause' button
     let buttonActions = [eatAction, sleepAction, playAction, cleanAction, toggleControls, togglePause];  // Added 'togglePause' action for Pause button
@@ -341,6 +335,7 @@ function updateBars() {
       buttons.push(btn);
     }
   }
+  //draws the vbars and handels the actions
   function drawBars() {
     textSize(32);
     let colors = ["green", "yellow", "red", "orange"];
@@ -364,7 +359,7 @@ function updateBars() {
       text(labels[i], startX + barWidth + 10, startY + i * spacing + barHeight / 2);
     }
   }
-
+//draws the frames of the pet
 function drawPet() {
   strokeWeight(0);
   let pixelColors;
@@ -387,7 +382,7 @@ function drawPet() {
       [2,2,2,2,1,1,1,1,1,1,1,2,2,2,2]
     ];
 
-    // Draw Zzz above the pet's head
+    // Draw Zzz above the pet's head when he is in sleep action
     fill(0);
     textSize(32);
     textStyle(BOLD);
@@ -459,7 +454,7 @@ function drawPet() {
       [2,2,2,2,1,1,1,1,1,1,1,2,2,2,2]
     ];
   }
-
+//the colour pallet for the pixel art
   let colorPalette = [
     color(188, 233, 84),  // Green
     color(0, 0, 0),       // Black
@@ -470,7 +465,7 @@ function drawPet() {
 
   drawImage(pixelColors, colorPalette);
 
-  
+  //for loop for my pixel art
 }
 function drawImage(image, palette, startX = 350, startY = 300) {
   for (let y = 0; y < image.length; y++) {
@@ -481,7 +476,7 @@ function drawImage(image, palette, startX = 350, startY = 300) {
   }
 }
 
-
+//eat action increases food and health
 function eatAction() {
   let currentTime = millis();
   if (!isPaused && !isSleeping && currentTime - lastActionTime.eat > actionCooldown) {
@@ -492,6 +487,7 @@ function eatAction() {
     saveGame();
   }
 }
+//sleepaction toggels into sleep wish plays sound affect and then increases energy
 function sleepAction() {
   if (!isPaused) {
     isSleeping = !isSleeping; // Toggle sleep mode
@@ -506,7 +502,7 @@ function sleepAction() {
     saveGame(); // Save the game state
   }
 }
-
+//playaction increases happiness
 function playAction() {
   if (millis() - lastActionTime.play < actionCooldown) return;
   
@@ -517,16 +513,17 @@ function playAction() {
   lastActionTime.play = millis();
 }
 
+//cleanaction increases happiness and health
 function cleanAction() {
   if (millis() - lastActionTime.clean < actionCooldown) return;
   
-  // Increase health
+ 
   barHeights[3] = min(barHeights[3] + 15, MAX_BAR_HEIGHT);
   
-  // Increase happiness
+  
   barHeights[2] = min(barHeights[2] + 10, MAX_BAR_HEIGHT);
   
-  // Play clean sound if available
+  
   if (cleanSound && cleanSound.isLoaded()) {
     cleanSound.play();
   } else {
@@ -548,7 +545,7 @@ function drawStatusIndicators() {
     text("SLEEPING", width / 2 - 70, height / 1 - 260);
   }
 }
-
+//togglesleep when sleep action is triggered
 function toggleSleep() {
   isSleeping = !isSleeping;
   
@@ -560,13 +557,13 @@ function toggleSleep() {
 
   saveGame();
 }
-
+//place where game data is saved
 function saveGame() {
   localStorage.setItem('barHeights', JSON.stringify(barHeights));
   localStorage.setItem('petData', JSON.stringify(pet));
   localStorage.setItem('isSleeping', JSON.stringify(isSleeping));
 }
-
+//loads the game save data
 function loadGame() {
   let savedPet = localStorage.getItem('petData');
   let savedSleepState = localStorage.getItem('isSleeping');
